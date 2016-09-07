@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y sudo && apt-get clean \
 
 RUN pip install mkdocs==0.15.3 \
     && mkdocs new /mkdocs \
-    && echo "docs_dir: /mkdocs/docs" \
-    && tar czf /mkdocs.tar.gz -C /mkdocs ./
+    && tar czf /mkdocs.tar.gz -C /mkdocs ./ \
+    && mkdir -p /mkdocs
 
 COPY docker-entrypoint.sh /entrypoint.sh
 
