@@ -14,7 +14,25 @@ if [ -n "${TOYBOX_UID}" ] && ! cat /etc/passwd | awk 'BEGIN{ FS= ":" }{ print $3
     echo "UID of ${user} has been changed."
 fi
 
-tar xzf /mkdocs.tar.gz -C /mkdocs
-chown -R ${user}:${group} /mkdocs
+MKDOCS_ROOT="/mkdocs"
+sudo tar xzf /mkdocs.tar.gz -C ${MKDOCS_ROOT}
+sudo chown -R ${user}:${group} ${MKDOCS_ROOT}
+
+out="/mkdocs/mkdocs.yml"
+echo "docs_dir: /mkdocs/docs" > ${out}
+{
+    echo "site_name: ${SITE_NAME:=My Docs}"
+    echo "repo_url: ${REPO_URL}"
+    echo "repo_name: ${REPO_NAME}"
+    echo "site_description: ${SITE_DESCRIPTION}"
+    echo "site_author: ${SITE_AUTHOR}"
+    echo "copyright: ${COPYRIGHT}"
+    echo "site_favicon: ${SITE_FAVICON}"
+    echo "google_analytics: ${GOOGLE_NALYTICS}"
+    echo "remote_branch: ${REMOTE_BRANCH:=gh-pages}"
+    echo "remote_name: ${REMOTE_NAME:=gh-pages}"
+    echo "theme: ${THEME:=mkdocs}"
+    echo "site_dir: ${SITE_DIR:=site}"
+} >> ${out}
 
 mkdocs serve -a 0.0.0.0:8000
