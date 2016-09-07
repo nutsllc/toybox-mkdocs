@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y sudo && apt-get clean \
     && groupadd mkdocs && useradd -g mkdocs mkdocs \
     && echo "mkdocs ALL=NOPASSWD: ALL" >> /etc/sudoers
 
-RUN pip install mkdocs \
+RUN pip install mkdocs==0.15.3 \
     && mkdocs new /mkdocs \
     && echo "docs_dir: /mkdocs/docs"
 
