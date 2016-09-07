@@ -14,4 +14,7 @@ if [ -n "${TOYBOX_UID}" ] && ! cat /etc/passwd | awk 'BEGIN{ FS= ":" }{ print $3
     echo "UID of ${user} has been changed."
 fi
 
+tar xzf /mkdocs.tar.gz -C /mkdocs
+chown -R ${user}:${group} /mkdocs
+
 mkdocs serve -a 0.0.0.0:8000
