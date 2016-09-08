@@ -18,7 +18,7 @@ MKDOCS_ROOT="/mkdocs"
 sudo tar xzf /mkdocs.tar.gz -C ${MKDOCS_ROOT}
 sudo chown -R ${user}:${group} ${MKDOCS_ROOT}
 
-out="/mkdocs/mkdocs.yml"
+out="${MKDOCS_ROOT}/mkdocs.yml"
 echo "docs_dir: /mkdocs/docs" > ${out}
 {
     echo "site_name: ${SITE_NAME:=My Docs}"
@@ -32,7 +32,8 @@ echo "docs_dir: /mkdocs/docs" > ${out}
     echo "remote_branch: ${REMOTE_BRANCH:=gh-pages}"
     echo "remote_name: ${REMOTE_NAME:=gh-pages}"
     echo "theme: ${THEME:=mkdocs}"
-    echo "site_dir: ${SITE_DIR:=site}"
+    echo "site_dir: ${SITE_DIR:=/var/www/html}"
 } >> ${out}
+mkdocs build --config-file ${MKDOCS_ROOT}/mkdocs.yml
 
-mkdocs serve -a 0.0.0.0:8000
+exec $@
