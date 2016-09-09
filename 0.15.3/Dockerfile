@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y sudo && apt-get clean \
     && echo "mkdocs ALL=NOPASSWD: ALL" >> /etc/sudoers
 
 RUN pip install mkdocs==0.15.3 \
+    && pip install mkdocs-bootstrap \
+    && pip install mkdocs-bootswatch \
     && mkdocs new /mkdocs \
     && tar czf /mkdocs.tar.gz -C /mkdocs ./
 
