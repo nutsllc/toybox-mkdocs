@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 user="mkdocs"
 group="mkdocs"
