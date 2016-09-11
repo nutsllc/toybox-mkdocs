@@ -1,17 +1,8 @@
 #!/bin/bash
+set -e
 
 user="www-data"
 group="www-data"
-
-if [ -n "${TOYBOX_GID}" ] && ! cat /etc/passwd | awk 'BEGIN{ FS= ":" }{ print $4 }' | grep ${TOYBOX_GID} > /dev/null 2>&1; then
-    sudo groupmod -g ${TOYBOX_GID} ${group}
-    echo "GID of ${group} has been changed."
-fi
-
-if [ -n "${TOYBOX_UID}" ] && ! cat /etc/passwd | awk 'BEGIN{ FS= ":" }{ print $3 }' | grep ${TOYBOX_UID} > /dev/null 2>&1; then
-    sudo usermod -u ${TOYBOX_UID} ${user}
-    echo "UID of ${user} has been changed."
-fi
 
 # --------------------------------------
 # MKDocs
@@ -37,6 +28,26 @@ tar xzf /mkdocs.tar.gz -C ${MKDOCS_ROOT} && {
         } > ${MKDOCS_ROOT}/conf/mkdocs.yml
     fi
     ln -sf ${MKDOCS_ROOT}/conf/mkdocs.yml ${MKDOCS_ROOT}/mkdocs.yml
+    chown -R ${user}:${group} ${MKDOCS_ROOT}
+    mkdocs build --clean --config-file ${MKDOCS_ROOT}/mkdocs.yml
+}
+
+# --------------------------------------
+# webhook
+# --------------------------------------
+tar xzf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} && {
+    rm /Git-Auto-Deploy.tar.gz
+    mkdir -p ${WEBHOOK_ROOT}/conf
+    if [ ! -f ${WEBHOOK_ROOT}/conf/config.json ]; then
+        mv /config.json ${WEBHOOK_ROOT}/conf/config.json
+    else
+        rm /config.json
+    fi
+    ln -sf ${WEBHOOK_ROOT}/conf/config.json ${WEBHOOK_ROOT}/config.json
+
+    if [ -n ${CLONE_URL} -a "${CLONE_URL}" != "" ]; then
+        sed -i -e s%"https\?://.*"%"${CLONE_URL}"\",% ${WEBHOOK_ROOT}/conf/config.json
+    fi
 
     if [ ! -f ${WEBHOOK_ROOT}/deploy.sh ]; then
         {
@@ -51,22 +62,6 @@ tar xzf /mkdocs.tar.gz -C ${MKDOCS_ROOT} && {
         } > ${WEBHOOK_ROOT}/deploy.sh
     fi
 
-    chown -R ${user}:${group} ${MKDOCS_ROOT}
-}
-mkdocs build --config-file ${MKDOCS_ROOT}/mkdocs.yml
-
-# --------------------------------------
-# webhook
-# --------------------------------------
-tar xzf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} && {
-    rm /Git-Auto-Deploy.tar.gz
-    mkdir -p ${WEBHOOK_ROOT}/conf
-    if [ ! -f ${WEBHOOK_ROOT}/conf/config.json ]; then
-        mv /config.json ${WEBHOOK_ROOT}/conf/config.json
-    else
-        rm /config.json
-    fi
-    ln -sf ${WEBHOOK_ROOT}/conf/config.json ${WEBHOOK_ROOT}/config.json
     chown -R ${user}:${group} ${WEBHOOK_ROOT}
 }
 

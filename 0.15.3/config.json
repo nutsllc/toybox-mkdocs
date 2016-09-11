@@ -2,13 +2,13 @@
   "host": "0.0.0.0",
   "port": 8001,
   "global_deploy": [
-    "echo 'Deploy started!' > /mkdocs/hook_global_started.txt",
-    "echo 'Deploy completed!' > /mkdocs/hook_global_completed.txt"
+    "",
+    ""
   ],
   "log-level": "INFO",
   "repositories": [
     {
-      "url": "http://gitbucket:8080/git/root/documents.git",
+      "url": "http://your-repo-url.git",
       "path": "/Git-Auto-Deploy/docs-hook/",
       "deploy": "sh /Git-Auto-Deploy/deploy.sh"
     }
