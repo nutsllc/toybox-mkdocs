@@ -38,22 +38,22 @@ tar xzf /mkdocs.tar.gz -C ${MKDOCS_ROOT} && {
     fi
     ln -sf ${MKDOCS_ROOT}/conf/mkdocs.yml ${MKDOCS_ROOT}/mkdocs.yml
 
-    if [ ! -f ${MKDOCS_ROOT}/deploy.sh ]; then
+    if [ ! -f ${WEBHOOK_ROOT}/deploy.sh ]; then
         {
             echo "#!/bin/sh"
             echo "set -e"
             echo ""
             echo "rm -rf ${MKDOCS_ROOT}/docs"
-            echo "cp -r ${MKDOCS_ROOT}/docs-hook ${MKDOCS_ROOT}/docs"
+            echo "cp -r ${WEBHOOK_ROOT}/docs-hook ${MKDOCS_ROOT}/docs"
             echo "mkdocs build --clean --config-file ${MKDOCS_ROOT}/mkdocs.yml"
             echo ""
             echo "exit 0"
-        } > ${MKDOCS_ROOT}/deploy.sh
+        } > ${WEBHOOK_ROOT}/deploy.sh
     fi
 
     chown -R ${user}:${group} ${MKDOCS_ROOT}
 }
-#mkdocs build --config-file ${MKDOCS_ROOT}/mkdocs.yml
+mkdocs build --config-file ${MKDOCS_ROOT}/mkdocs.yml
 
 # --------------------------------------
 # webhook

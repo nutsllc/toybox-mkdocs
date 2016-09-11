@@ -27,6 +27,20 @@ ENV WEBHOOK_ROOT="/Git-Auto-Deploy"
 COPY config.json /config.json
 RUN git clone https://github.com/olipo186/Git-Auto-Deploy.git ${WEBHOOK_ROOT} \
     && pip install -r ${WEBHOOK_ROOT}/requirements.txt \
+    && rm -rf ${WEBHOOK_ROOT}/.git \
+        ${WEBHOOK_ROOT}/.gitignore \
+        ${WEBHOOK_ROOT}/.travis.yml \
+        ${WEBHOOK_ROOT}/Dockerfile \
+        ${WEBHOOK_ROOT}/GitAutoDeploy.py \
+        ${WEBHOOK_ROOT}/LICENSE \
+        ${WEBHOOK_ROOT}/Makefile \
+        ${WEBHOOK_ROOT}/README.md \
+        ${WEBHOOK_ROOT}/config.json.sample \
+        ${WEBHOOK_ROOT}/docs \
+        ${WEBHOOK_ROOT}/platforms/ \
+        ${WEBHOOK_ROOT}/requirements.txt \
+        ${WEBHOOK_ROOT}/setup.py \
+        ${WEBHOOK_ROOT}/test \
     && mkdir -p ${WEBHOOK_ROOT}/log \
     && tar czf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} ./
 

@@ -9,8 +9,8 @@
   "repositories": [
     {
       "url": "http://gitbucket:8080/git/root/documents.git",
-      "path": "./docs-hook/",
-      "deploy": "sh /mkdocs/deploy.sh"
+      "path": "/Git-Auto-Deploy/docs-hook/",
+      "deploy": "sh /Git-Auto-Deploy/deploy.sh"
     }
   ]
 }
