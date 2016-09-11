@@ -1,32 +1,76 @@
-FROM python:3.5.2
+#FROM python:3.5.2
+FROM python:2.7.12
 MAINTAINER Nuts Project, LLC
 
-RUN apt-get update && apt-get install -y sudo && apt-get clean \
-    && groupadd -g 1000 mkdocs && useradd -u 1000 -g mkdocs mkdocs \
-    && echo "mkdocs ALL=NOPASSWD: ALL" >> /etc/sudoers
+# -----------------------------------------
+# General
+# -----------------------------------------
+#RUN apt-get update && apt-get install -y sudo vim && apt-get clean \
+#    && groupadd -g 1000 mkdocs && useradd -u 1000 -g mkdocs mkdocs \
+#    && echo "mkdocs ALL=NOPASSWD: ALL" >> /etc/sudoers
 
+
+# -----------------------------------------
+# mkdocs
+# -----------------------------------------
+ENV MKDOCS_ROOT="/mkdocs"
 RUN pip install mkdocs==0.15.3 \
     && pip install mkdocs-bootstrap \
     && pip install mkdocs-bootswatch \
     && mkdocs new /mkdocs \
     && tar czf /mkdocs.tar.gz -C /mkdocs ./
 
-ENV APACHE_RUN_USER mkdocs
-ENV APACHE_RUN_GROUP mkdocs
-ENV APACHE_PID_FILE /var/run/apache2.pid
-ENV APACHE_RUN_DIR /var/run/apache2
-ENV APACHE_LOG_DIR /var/log/apache2
-ENV APACHE_LOCK_DIR /var/lock/apache2
+# -----------------------------------------
+# webhook for Github/Gitbucket
+# -----------------------------------------
+ENV WEBHOOK_ROOT="/Git-Auto-Deploy"
+COPY config.json /config.json
+RUN git clone https://github.com/olipo186/Git-Auto-Deploy.git ${WEBHOOK_ROOT} \
+    && pip install -r ${WEBHOOK_ROOT}/requirements.txt \
+    && mkdir -p ${WEBHOOK_ROOT}/log \
+    && tar czf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} ./
+
+# -----------------------------------------
+# Apache2.4
+# -----------------------------------------
+#ENV APACHE_RUN_USER mkdocs
+#ENV APACHE_RUN_GROUP mkdocs
+#ENV APACHE_PID_FILE /var/run/apache2.pid
+#ENV APACHE_RUN_DIR /var/run/apache2
+#ENV APACHE_LOG_DIR /var/log/apache2
+#ENV APACHE_LOCK_DIR /var/lock/apache2
 
 RUN apt-get update && apt-get install -y apache2 && apt-get clean \
-    && mkdir -p /var/run/apache2 \
-    && mkdir -p /var/lock/apache2
+    && mkdir -p /var/run/apache2 /var/lock/apache2
 
+# -----------------------------------------
+# Supervisor
+# -----------------------------------------
+RUN apt-get update && apt-get install -y apache2 supervisor \
+    && mkdir -p /var/lock/apache2 /var/run/apache2 /var/run/Git-Auto-Deploy /var/log/supervisor
+RUN { \
+        echo "[supervisord]"; \
+        echo "nodaemon=true"; \
+        echo ""; \
+        echo "[program:apache2]"; \
+        echo "command=/bin/bash -c 'source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND'"; \
+        echo ""; \
+        echo "[program:webhook]"; \
+        echo "command=$(which python) ${WEBHOOK_ROOT}/gitautodeploy --config ${WEBHOOK_ROOT}/conf/config.json"; \
+        echo "stdout_logfile=${WEBHOOK_ROOT}/log/webhook.log"; \
+        echo "stderr_logfile=${WEBHOOK_ROOT}/log/webhook_err.log"; \
+    } > /etc/supervisor/conf.d/supervisord.conf
+
+
+# -----------------------------------------
+# Post building
+# -----------------------------------------
 COPY docker-entrypoint.sh /entrypoint.sh
 
 WORKDIR /mkdocs
 
-EXPOSE 80
+EXPOSE 80 8001
 
 ENTRYPOINT [ "/entrypoint.sh" ]
-CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
+#CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
+CMD ["/usr/bin/supervisord"]
