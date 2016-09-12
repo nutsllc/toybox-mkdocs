@@ -12,6 +12,8 @@
 
 を自動的に実行することも可能です。
 
+このコンテナイメージは [Docker Hub](https://hub.docker.com/r/nutsllc/toybox-mkdocs/) から取得することができます。
+
 ## コンテナに含む主なコンポーネント
 
 * [MKDocs](http://www.mkdocs.org/) - HTML 生成エンジン
@@ -25,7 +27,7 @@
 以下のコマンドでコンテナを起動します。
 
 ```bash
-docker run --name mkdocs -p 8000:80 -v $(pwd)/.docs:/mkdocs/docs -itd mkdocs 
+docker run --name mkdocs -p 8000:80 -v $(pwd)/.docs:/mkdocs/docs -itd nutsllc/toybox-mkdocs 
 ```
 
 * コンテナ内の ``/mkdocs/docs`` ディレクトリをホスト OS にマウントして起動します。``/mkdocs/docs`` は Markdown ファイルを配置するディレクトリです。
@@ -65,7 +67,7 @@ Markdown ファイルを GitHub などのレポジトリで管理している場
 リポジトリと関連づけるには ``-p 8001:8001`` と ``-e GIT_CLONE_URL=<レポジトリの Clon URL>`` を追加してコンテナを起動させます。例えば、以下のようなコマンドでコンテナを起動させます。
 
 ```bash
-docker run --name mkdocs -p 8000:80 -p 8001:8001 -v $(pwd)/.docs:/mkdocs/docs -e GIT_CLONE_URL=https://github.com/taro/documents.git -itd mkdocs 
+docker run --name mkdocs -p 8000:80 -p 8001:8001 -v $(pwd)/.docs:/mkdocs/docs -e GIT_CLONE_URL=https://github.com/taro/documents.git -itd nutsllc/toybox-mkdocs 
 ```
 
 レポジトリと関連付けてコンテナを起動した場合、コンテナ起動時にレポジトリから Markdown ファイルの取得、HTML 生成、WEB サーバードキュメントルートへの配置、が実行されるので、WEB ブラウザから ``http://<ホスト名>:8000`` へアクセスすると、生成された HTML が閲覧できます。
