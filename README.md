@@ -4,6 +4,8 @@ A Dockerfile for deploying a [MKDocs](http://www.mkdocs.org/) which is a fast, s
 
 This image is registered to the [Docker Hub](https://hub.docker.com/r/nutsllc/toybox-mkdocs/) that is the official docker image registory.
 
+[README in Japanese](https://github.com/nutsllc/toybox-mkdocs/blob/master/README-jp.md)
+
 ## What is the MKDocs
 
 >MkDocs is a fast, simple and downright gorgeous static site generator that's geared towards building project documentation. Documentation source files are written in Markdown, and configured with a single YAML configuration file.
