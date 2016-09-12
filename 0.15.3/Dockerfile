@@ -13,6 +13,7 @@ MAINTAINER Nuts Project, LLC
 # -----------------------------------------
 # mkdocs
 # -----------------------------------------
+ENV MKDOCS_VERSION="0.15.3"
 ENV MKDOCS_ROOT="/mkdocs"
 RUN pip install mkdocs==0.15.3 \
     && pip install mkdocs-bootstrap \
@@ -41,8 +42,8 @@ RUN git clone https://github.com/olipo186/Git-Auto-Deploy.git ${WEBHOOK_ROOT} \
         ${WEBHOOK_ROOT}/requirements.txt \
         ${WEBHOOK_ROOT}/setup.py \
         ${WEBHOOK_ROOT}/test \
-    && mkdir -p ${WEBHOOK_ROOT}/log \
     && tar czf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} ./
+    #&& mkdir -p ${WEBHOOK_ROOT}/log \
 
 # -----------------------------------------
 # Apache2.4
@@ -60,19 +61,16 @@ RUN apt-get update && apt-get install -y apache2 && apt-get clean \
 # -----------------------------------------
 # Supervisor
 # -----------------------------------------
-RUN apt-get update && apt-get install -y apache2 supervisor \
-    && mkdir -p /var/lock/apache2 /var/run/apache2 /var/run/Git-Auto-Deploy /var/log/supervisor
-RUN { \
+RUN apt-get update && apt-get install -y supervisor \
+    && mkdir -p /var/run/Git-Auto-Deploy /var/log/supervisor \
+    && { \
         echo "[supervisord]"; \
         echo "nodaemon=true"; \
         echo ""; \
         echo "[program:apache2]"; \
         echo "command=/bin/bash -c 'source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND'"; \
+        echo "autorestart=true"; \
         echo ""; \
-        echo "[program:webhook]"; \
-        echo "command=$(which python) ${WEBHOOK_ROOT}/gitautodeploy --config ${WEBHOOK_ROOT}/conf/config.json"; \
-        echo "stdout_logfile=${WEBHOOK_ROOT}/log/webhook.log"; \
-        echo "stderr_logfile=${WEBHOOK_ROOT}/log/webhook_err.log"; \
     } > /etc/supervisor/conf.d/supervisord.conf
 
 
@@ -87,4 +85,4 @@ EXPOSE 80 8001
 
 ENTRYPOINT [ "/entrypoint.sh" ]
 #CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]

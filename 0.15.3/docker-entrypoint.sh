@@ -35,34 +35,48 @@ tar xzf /mkdocs.tar.gz -C ${MKDOCS_ROOT} && {
 # --------------------------------------
 # webhook
 # --------------------------------------
-tar xzf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} && {
+if [ -z "${GIT_CLONE_URL}" -a "${GIT_CLONE_URL}" = "" ]; then
     rm /Git-Auto-Deploy.tar.gz
-    mkdir -p ${WEBHOOK_ROOT}/conf
-    if [ ! -f ${WEBHOOK_ROOT}/conf/config.json ]; then
-        mv /config.json ${WEBHOOK_ROOT}/conf/config.json
-    else
-        rm /config.json
-    fi
-    ln -sf ${WEBHOOK_ROOT}/conf/config.json ${WEBHOOK_ROOT}/config.json
-
-    if [ -n ${CLONE_URL} -a "${CLONE_URL}" != "" ]; then
-        sed -i -e s%"https\?://.*"%"${CLONE_URL}"\",% ${WEBHOOK_ROOT}/conf/config.json
-    fi
-
-    if [ ! -f ${WEBHOOK_ROOT}/deploy.sh ]; then
+else
+    tar xzf /Git-Auto-Deploy.tar.gz -C ${WEBHOOK_ROOT} && {
+        rm /Git-Auto-Deploy.tar.gz
+        mkdir -p ${WEBHOOK_ROOT}/conf
+        if [ ! -f ${WEBHOOK_ROOT}/conf/config.json ]; then
+            mv /config.json ${WEBHOOK_ROOT}/conf/config.json
+        else
+            rm /config.json
+        fi
+        ln -sf ${WEBHOOK_ROOT}/conf/config.json ${WEBHOOK_ROOT}/config.json
+        sed -i -e s%"https\?://.*"%"${GIT_CLONE_URL}"\",% ${WEBHOOK_ROOT}/conf/config.json
+    
+        if [ ! -f ${WEBHOOK_ROOT}/deploy.sh ]; then
+            {
+                echo "#!/bin/sh"
+                echo "set -e"
+                echo ""
+                echo "rm -rf ${MKDOCS_ROOT}/docs"
+                echo "cp -r ${WEBHOOK_ROOT}/docs-hook ${MKDOCS_ROOT}/docs"
+                echo "mkdocs build --clean --config-file ${MKDOCS_ROOT}/mkdocs.yml"
+                echo ""
+                echo "exit 0"
+            } > ${WEBHOOK_ROOT}/deploy.sh
+        fi
+    
         {
-            echo "#!/bin/sh"
-            echo "set -e"
-            echo ""
-            echo "rm -rf ${MKDOCS_ROOT}/docs"
-            echo "cp -r ${WEBHOOK_ROOT}/docs-hook ${MKDOCS_ROOT}/docs"
-            echo "mkdocs build --clean --config-file ${MKDOCS_ROOT}/mkdocs.yml"
-            echo ""
-            echo "exit 0"
-        } > ${WEBHOOK_ROOT}/deploy.sh
-    fi
+            echo "[program:webhook]"
+            echo "command=$(which python) ${WEBHOOK_ROOT}/gitautodeploy --config ${WEBHOOK_ROOT}/conf/config.json"
+            echo "autorestart=true"
+            #echo "stdout_logfile=${WEBHOOK_ROOT}/log/webhook.log"
+            #echo "stderr_logfile=${WEBHOOK_ROOT}/log/webhook_err.log"
+            echo "stdout_logfile=/dev/fd/1"
+            echo "stderr_logfile=/dev/fd/1"
+            echo "stdout_logfile_maxbytes=0"
+            echo "stderr_logfile_maxbytes=0"
+        } >> /etc/supervisor/conf.d/supervisord.conf
+    
+        chown -R ${user}:${group} ${WEBHOOK_ROOT}
+    }
+fi
 
-    chown -R ${user}:${group} ${WEBHOOK_ROOT}
-}
 
 exec $@
