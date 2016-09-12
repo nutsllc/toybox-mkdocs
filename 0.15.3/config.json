@@ -1,0 +1,16 @@
+{
+  "host": "0.0.0.0",
+  "port": 8001,
+  "global_deploy": [
+    "",
+    ""
+  ],
+  "log-level": "INFO",
+  "repositories": [
+    {
+      "url": "http://your-repo-url.git",
+      "path": "/Git-Auto-Deploy/docs-hook/",
+      "deploy": "sh /Git-Auto-Deploy/deploy.sh"
+    }
+  ]
+}
